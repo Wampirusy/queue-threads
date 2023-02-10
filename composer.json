@@ -1,0 +1,20 @@
+{
+    "name": "wampirusy/queue-threads",
+    "description": "test",
+    "license": "beerware",
+    "autoload": {
+        "psr-4": {
+            "ASW\\QueueThreads\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Wampirusy",
+            "email": "wampirusy@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.4|^8.0",
+        "laravel/framework": "^7.0 || ^8.0||^9.0"
+    }
+}
