@@ -5,6 +5,7 @@ namespace ASW\QueueThreads\Services;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Redis\Factory as RedisFactory;
 use Illuminate\Redis\Connections\Connection;
+use Illuminate\Support\Facades\File;
 
 class ScalingManager
 {
@@ -15,10 +16,10 @@ class ScalingManager
 
     public function __construct(
         Repository $config,
-        RedisFactory $redisFactory,
+        RedisFactory $redisFactory
     ) {
         $this->config = $config;
-        $this->connection = $redisFactory->connection('queue');
+        $this->connection = $redisFactory->connection($config->get('queue.connections.redis.connection'));
     }
 
     /**
@@ -44,7 +45,7 @@ class ScalingManager
      * Calculate how many threads to give for queues of each user, depending on queue sizes.
      * It's for supervisor threads within one container.
      */
-    public function calcThreadsPerClient(): array
+    public function calcThreadsPerWorkers(): array
     {
         $jobsCountByClient = $this->getJobsCountByClient();
         $totalJobsCount = array_sum($jobsCountByClient);
@@ -130,9 +131,16 @@ class ScalingManager
         return $desiredContainersCount;
     }
 
-    private function getQueues(): array
+    private function getQueues(): iterable
     {
-        return $this->config->get('queue.status_list.queues', []);
+        foreach (File::allFiles(app()->basePath('docker/config/supervisor/worker')) as $file) {
+            preg_match('/command=.+--queue=(?<queues>[\w,]+)/', $file->getContents(), $matches);
+
+            foreach (explode(',', $matches['queues']) as $queue) {
+                yield $file->getFilename() => $queue;
+            }
+        }
+//        return $this->config->get('queue.status_list.queues', []);
     }
 
     /**
@@ -154,13 +162,9 @@ class ScalingManager
     private function getJobsCountByClient(): array
     {
         $jobsCountByClient = [];
-        foreach ($this->getQueues() as $queueName) {
-            if (!str_contains($queueName, '_')) {
-                continue; //queue doesn't belong to any user
-            }
-            $clientName = strtok($queueName, '_');
+        foreach ($this->getQueues() as $worker => $queueName) {
             $jobsCount = $this->getQueueSize($queueName);
-            $jobsCountByClient[$clientName] = isset($jobsCountByClient[$clientName]) ? ($jobsCountByClient[$clientName] + $jobsCount) : $jobsCount;
+            $jobsCountByClient[$worker] = isset($jobsCountByClient[$worker]) ? ($jobsCountByClient[$worker] + $jobsCount) : $jobsCount;
         }
 
         return $jobsCountByClient;

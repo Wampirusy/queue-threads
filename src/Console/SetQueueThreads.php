@@ -23,13 +23,13 @@ class SetQueueThreads extends Command
 
     public function handle(ScalingManager $scalingManager): void
     {
-        $threads = $scalingManager->calcThreadsPerClient();
+        $command = __DIR__.'/../../console/functions.sh';
+        $threads = $scalingManager->calcThreadsPerWorkers();
 
-        foreach ($threads as $user => $count) {
-            $confFile = 'job_' . $user . '.conf';
-            $this->line("Set $confFile to $count threads...");
+        foreach ($threads as $workerFilename => $count) {
+            $this->line("Set $workerFilename to $count threads...");
             echo shell_exec(
-                "/bin/bash -c 'source /app/docker/provision/entrypoint.d/functions.sh && setQueueThreads $count $confFile' "
+                "/bin/bash -c 'source $command && setQueueThreads $count $workerFilename' "
             );
         }
 

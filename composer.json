@@ -1,18 +1,18 @@
 {
-    "name": "wampirusy/queue-threads",
-    "description": "test",
-    "license": "beerware",
-    "autoload": {
-        "psr-4": {
-            "ASW\\QueueThreads\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "Wampirusy",
-            "email": "wampirusy@gmail.com"
-        }
-    ],
+  "name": "wampirusy/queue-threads",
+  "description": "test",
+  "license": "beerware",
+  "autoload": {
+    "psr-4": {
+      "ASW\\QueueThreads\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Wampirusy",
+      "email": "wampirusy@gmail.com"
+    }
+  ],
   "extra": {
     "laravel": {
       "providers": [
@@ -20,9 +20,16 @@
       ]
     }
   },
-    "minimum-stability": "dev",
-    "require": {
-        "php": "^7.4|^8.0",
-        "laravel/framework": "^7.0 || ^8.0||^9.0"
+  "minimum-stability": "dev",
+  "repositories": {
+    "airslate-laravel-prometheus-exporter": {
+      "type": "vcs",
+      "url": "git@github.com:airslateinc/laravel-prometheus-exporter.git"
     }
+  },
+  "require": {
+    "php": "^7.4|^8.0",
+    "laravel/framework": "^7.0 || ^8.0||^9.0",
+    "airslate/laravel-prometheus-exporter": "^4"
+  }
 }
